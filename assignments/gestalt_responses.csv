@@ -1,0 +1,7 @@
+panel,principle,true_groups,perceived_groups,match
+proximity,proximity,4,4,True
+similarity,similarity,4,4,True
+enclosure,enclosure,4,4,True
+continuity,continuity,2,2,True
+closure,closure,2,2,True
+connection,connection,24,24,True
