@@ -1,0 +1,12 @@
+join: 20 polygons matched 20 counties; 4 polygons without a county left out: ['D21', 'D22', 'D23', 'D24']
+Map A: breaks [  88.   203.2  409.2  673.2 2167.8 5971. ]
+Map B: breaks [ 479.2  654.5  786.  1325.6 1639.6 1800. ]
+r(crimes, population) = +0.935
+top 3 by count: ['Dunmere', 'Pellbrook', 'Grimsby']
+top 3 by rate:  ['Hollowfield', 'Netherby', 'Elmsworth']
+overlap: 0
+counties moving 3+ ranks between the two lists: 7 -> ['Calder', 'Dunmere', 'Elmsworth', 'Hollowfield', 'Pellbrook', 'Rushmere', 'Stonegate']
+  Elmsworth: population 22,000; count rank 13 of 20 -> rate rank 3
+  Hollowfield: population 12,000; count rank 16 of 20 -> rate rank 1
+
+Next: python3 partC_maps.py --run <reader>   (five readers minimum, Map A first, then Map B; no revising A)

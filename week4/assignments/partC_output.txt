@@ -1,0 +1,19 @@
+== C.1  the three conditions, tested ==
+
+(a) touch_* columns: {'n': 4000, 'shares_pct': {'touch_search': 42.62, 'touch_social': 32.3, 'touch_email': 27.48, 'touch_direct': 28.58}, 'sum_pct': 130.98, 'exclusive': False, 'n_multi': 1105, 'pct_multi': 27.62, 'n_zero': 0}
+   exclusive parts? NO (27.6% of customers in 2+ parts) | meaningful whole? shares sum to 130.98% — there is no whole | share is the question? partly (reach per channel)
+   VERDICT: neither pie nor stacked/treemap. A bar chart of reach per channel, each against all 4,000 customers.
+
+(b) shares_eight.csv:
+   sum = 100.0000  assert |sum-100|<1e-6 -> True
+   exclusive: each SKU in one sub-category after dedupe (nunique parents per sub = 1) | whole = net revenue of the catalogue | share IS the question (where does the money sit?)
+   VERDICT: legal as a pie, but eight slices with three within 4 points of each other (C 15.0, H 13.1, G 11.2) is beyond what angle can rank -> sorted horizontal bar chart (position on a common scale). Pie only if the question were 'is Phones about a quarter?'.
+
+(c) 2025Q4 premium 228.0 vs other 372.0, whole 600.0: share 38.0%
+   exclusive: yes (premium and not-premium) | whole meaningful: yes, all Q4 revenue | share is the question: for a single quarter yes.
+   VERDICT: a pie or a single 100% bar of the two parts is legal for the 2025Q4 snapshot (two slices, one comparison to 50%); NOT for the trend — a share line hides that premium is flat and the total fell 40% (Part A case 9).
+
+wrote partC_stimulus_pie.png and partC_stimulus_bars.png
+TRUE ORDER: A(24.6) > B(18.4) > C(15.0) > H(13.1) > G(11.2) > D(9.2) > E(6.1) > F(2.4)
+Run the experiment on a real person: python3 partC_shares.py --run <reader-name>
+State your rule (C.4): I will draw a pie only for two (at most three) parts of a meaningful whole where the question is 'about half / about a quarter?', never for more than five parts and never for a trend.

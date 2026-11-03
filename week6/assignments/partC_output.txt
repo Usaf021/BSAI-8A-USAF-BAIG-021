@@ -1,0 +1,20 @@
+join: 24 matched, 0 unmatched
+pooled national rate 43.7 interruptions per 1,000 households
+r(interruptions, households) = +0.991; r(rate, households) = +0.175
+top 3 by count: ['D17', 'D13', 'D24'] | by rate: ['D12', 'D11', 'D13'] | on both: ['D13']
+5 most populous: 12.6% of land, 59.9% of people
+count-map winners vs rate-map winners:
+ code district  outages  households  rate
+ D11    Kotla    31283      616114  50.8
+ D12  Lashkar    12067      237190  50.9
+ D13 Mehrabad    55879     1110000  50.3
+ D17  Qilabad    63237     1566571  40.4
+ D24  Zhobara    43710     1028226  42.5
+D13 Mehrabad: 50.3/1,000 = +15% vs national; it is on both lists because it is both large (1.11 m households) and worse than average per household
+excess interruptions over the pooled expectation (events above what the national rate predicts):
+{12: 7425.0, 10: 4388.0, 11: 1713.0, 17: 1154.0, 2: 818.0} | below expectation (would lose money if count-based): {16: -5148.0, 8: -2211.0, 4: -1629.0, 22: -1202.0}
+count-top-3 districts running BELOW the national rate (they would take money they do not need): ['D17', 'D24'] [40.4, 42.5]
+rate-top-3 districts a count map would not fund: ['D11', 'D12'] [31283, 12067] interruptions each
+funnel (Poisson, 95%): 22 of 24 districts outside; smallest district has 76,721 households and 3,234 interruptions — counts this large make sampling noise tiny, so differences in rate are not small-number artefacts. Nothing suppressed or merged.
+Jenks breaks: [30.4 33.5 36.2 42.7 45.8 50.9] GVF 0.959
+wrote partC_figure.png

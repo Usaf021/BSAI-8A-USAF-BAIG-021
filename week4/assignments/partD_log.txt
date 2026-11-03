@@ -1,0 +1,19 @@
+[1] raw rows: 12,670
+[2] two timestamp formats: ISO 9,019 rows, DD/MM/YYYY 3,651 rows
+    ambiguity test: first field>12 in 2,151 rows, second field>12 in 0 rows -> DD/MM
+    range 2024-04-01 00:00:00 -> 2025-09-11 23:00:00; format='mixed' would silently misdate 1,382 rows
+[3] device: 6 spellings stripped + lower-cased -> {'mobile': 8123, 'desktop': 3770, 'tablet': 777} (0 rows dropped)
+[4] exact duplicate hours removed (same timestamp and identical values): 286
+[5] sentinel sessions == -1 set to NaN: 287 hours (orders>0 in all of them: True)
+[6] hourly audit: monotonic=True dupes=0 missing hours=312 (13 whole days), span ('2024-04-01 00:00:00', '2025-09-11 23:00:00')
+    missing days: ['2024-05-18', '2024-07-02', '2024-07-03', '2024-09-27', '2024-11-11', '2024-12-25', '2025-01-01', '2025-02-14', '2025-03-30', '2025-03-31', '2025-06-07', '2025-07-19', '2025-08-23']
+[7] daily sessions = sum of hours (flow). 287 sentinel hours imputed by weekday-hour median (+2.39% on total); missing days left NaN, not 0
+[8] partial final month: 2025-09 holds 11 days (to 2025-09-11); marked on figures, excluded from monthly comparisons
+
+[9] catalogue: 345 SKU rows; SKU SKU-0127 appears under two parents (Audio & Imaging/Audio and Lifestyle/Wearables); sku_name 'AUDI-04' belongs to Audio -> dropped the Lifestyle/Wearables copy (1 row). A child must have one parent.
+[10] 7 SKUs have negative net revenue (total -1.07 PKR m, -0.062% of the whole). They are netted inside their sub-category (every sub-category total stays positive); no SKU-level area is drawn, so no negative is ever an area.
+[11] self-check vs shares_eight.csv: max deviation 0.24 pp (limit 0.3) -> PASS
+     tree check: every sub-category has exactly one parent: True
+     'Other' bucket: none needed — 4 parents, 8 children; nothing folded away.
+
+wrote /Users/muhammadusafbaig/Desktop/week 4-6/week4/assignments/partD_figure.png

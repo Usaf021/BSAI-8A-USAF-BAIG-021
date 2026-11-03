@@ -1,0 +1,37 @@
+== B1  the size range ==
+sizes=(lo, hi) = (12, 1500) points^2, applied as AREA (ax.scatter s=, which is points^2).
+  smallest mark: area 12 pt^2 -> diameter 3.9 pt (about 1.4 mm): the smallest that still shows a filled disc with an edge at 300 dpi and 6 inch panels.
+  largest mark: area 1500 pt^2 -> diameter 43.7 pt (0.61 in): covers ~1/8 of a 5-inch axis; the 3 largest countries are far apart in GDP so they do not swallow neighbours.
+  area ratio 125x  ->  DIAMETER ratio 11.2x (= sqrt of area ratio; radius-driven would be 125x).
+  population range is 589x, so the 125x area range COMPRESSES it; the size legend carries the real values.
+  check area-not-radius: sqrt(s) is not linear in pop (r = 0.944) while s is (r = 1.000).
+
+== B2  overplotting: 9,000 points, an 800-point cluster at (3.1, 3.0) ==
+points within 0.35 of (3.1, 3.0): 517 of 9,000 (the cluster is a tight blob in the upper-right tail)
+points within 0.9 of (3.1, 3.0): 800 (the 800-point cluster). Densest 40x40 bin: cluster 71 points vs main cloud 50; median occupied bin of the cloud 5
+  opaque:      the cluster is visible as an isolated blob — but it looks exactly as dense as the 8,200-point cloud, which is a solid slab. Density cannot be read: 800 points and 80 would look the same. Location yes, amount no.
+  transparent: alpha=0.12. Cluster visible and darker than the cloud edge; inside the cloud the darkness saturates in the middle, so relative density is only roughly readable. Visible, weakly quantitative.
+  hexbin:      gridsize=40. Cluster is visible AND is the densest region (max bin 71 vs 50 for the whole cloud); the colour bar gives counts.
+  KDE:         visible as a second hill; density at the cluster 0.104 vs main peak 0.131 (79%); smooth, but depends on the bandwidth and gives no counts.
+Publish: hexbin (gridsize=40) with a count colour bar — the cluster is visible, countable, and there is no bandwidth to defend. Declared parameters: gridsize=40; (alpha=0.12 and the KDE bandwidth are on the comparison figure only).
+
+== B3  scaling three ways, then PCA ==
+  minmax  gdp_pc axis: min 0.000 median 0.017 max 1.000 | 58 of 60 below 0.10
+  zscore  gdp_pc axis: min -0.362 median -0.225 max 7.501 | 59 of 60 within ±0.5 sd | Aldonia at 7.50 sd, the other 59 span -0.36..0.47
+  rank    gdp_pc axis: min 0.017 median 0.508 max 1.000 | 5 of 60 below 0.10
+  PCA on standardised columns: explained variance ratio [0.675, 0.162, 0.077, 0.065, 0.022]
+  first two components hold 83.7%; a two-axis picture misses 16.3% of the variance
+
+== B4  project before you measure ==
+four northernmost districts (by representative-point latitude): ['D21', 'D22', 'D19', 'D24']
+  share of total area, spherical: 10.51%   raw lon/lat shoelace: 11.08%
+  most distorted single district: D21 (lat 35.0): 2.15% true vs 2.27% in degrees (+5.6%)
+  the degree shoelace weights every district equally per square degree; a degree of longitude at 36N is 0.81 as wide as at the equator, so the north is over-weighted.
+  Mercator area inflation across the federation: total Mercator area / true area = 1.340x (district range 1.24x at the south edge to 1.49x in the north)
+  Why it matters (slide 34): in a choropleth the colour covers an area, so area is the encoding channel; Mercator makes the north 1.21x heavier than the south for identical true size, so the map weights the same data differently by latitude.
+
+== B5  small-area stability, funnel plot ==
+pooled rate 8.72 per 100,000; units outside the 95% limits: 1 of 40 ['U32'] (chance alone predicts ~2)
+So the map in case 6 is almost entirely noise: only U32 is flagged, and even it is the expected one-or-two false alarm; all units share one true rate.
+minimum population at which 9 vs 18 per 100,000 separate (95% Poisson intervals just stop overlapping): ~250,000
+(at 95% limits on both sides; a stricter comparison needs more)

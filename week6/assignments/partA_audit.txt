@@ -1,0 +1,64 @@
+====================================================================== 
+FILE 1 · district_grid.csv
+======================================================================
+rows 25; columns ['code', 'district', 'zone', 'population', 'households', 'area_km2', 'lon', 'lat', 'income_pc_usd', 'electrification_pct', 'solar_kw_installed', 'outages', 'outage_minutes']
+dtypes as pandas reads them: {'electrification_pct': 'object'} <- electrification_pct is text
+key uniqueness: code unique = False; duplicated codes = ['D11']
+the duplicated rows differ in: ['district', 'solar_kw_installed', 'outages', 'outage_minutes']
+code   district  solar_kw_installed  outages  outage_minutes
+ D11      Kotla              719625    31283         6422838
+ D11 Kotla City              719637    31280         6422428
+register name for D11 in Week 5's file: Kotla
+electrification_pct: 2 values carry a '%' suffix, 3 are blank -> numeric; range 66.6–90.3, missing 3
+persons per household range before fix: 5.7 to 5939.56 -> outside 5.7–7.4: ['D21'] (182 households for 1,081,000 people = 5,940 persons/household)
+the other 23 districts run 5.70–7.36 persons/household; D21 at x1000 = 182,000 households = 5.94 persons/household (inside the range)
+outage_minutes sentinel -1 in: ['D09', 'D20']
+districts with usable outage_minutes: 22 of 24; mean interruption 77–214 minutes
+rows 24; population 57,857,000; households 8,908,512; interruptions 388,879
+persons/household range after: 5.70–7.36; electrification 66.6–90.3 (missing 3)
+join to regions.geojson: 24 matched, 0 unmatched
+zones: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']; denominators: households 76,721–1,566,571, population 468,000–10,966,000
+
+====================================================================== 
+FILE 2 · grid_daily.csv
+======================================================================
+rows 3061; dtypes {'date': 'object', 'zone': 'object', 'cumulative_mwh': 'float64', 'peak_load_mw': 'float64', 'outage_minutes': 'int64'}
+date formats: ISO 2887, DD/MM/YYYY 174; slash rows with first field>12: 103, second field>12: 0 -> DD/MM
+range 2025-04-01 -> 2026-09-11; format='mixed' would misdate 65 of the 174 slash rows
+duplicate (date, zone) keys: 15; of these exact duplicate rows: 12; 3 repeat the same meter reading but file different peak_load_mw / outage_minutes (conflicting)
+zone-days kept: 3046
+calendar: 529 days x 6 zones = 3174 slots; never reported: 128
+by zone: {'P1': 12, 'P2': 21, 'P3': 15, 'P4': 24, 'P5': 36, 'P6': 20} | zone-days missing on the same date: {1: 102, 2: 13}
+audit_index per zone: {'P1': 12, 'P2': 21, 'P3': 15, 'P4': 24, 'P5': 36, 'P6': 20}
+peak_load_mw sentinel -1: 46 rows -> NaN; remaining range 914–9918 MW; outage_minutes range 0–512
+meter readings that go DOWN: 1 -> [{'date': Timestamp('2026-02-17 00:00:00'), 'zone': 'P4', 'prev': 21444254.8, 'cumulative_mwh': 1180.0}]
+zone P4 reading falls from 21,444,255 to 1,180 then climbs ~41,264/day: the meter was replaced or reset
+P1 June 2026: sum of the reading column = 574,845,315 MWh (WRONG, a counter); 
+                energy delivered = reading(30 Jun) - reading(31 May) = 1,199,207 MWh; reading(1 Jul) - reading(1 Jun) = 1,200,239 MWh (the brief's 1,200,239 is the latter convention); sum() overstates by 479x
+first-of-month convention used for comparability with the brief; difference between the two conventions 0.09%
+
+====================================================================== 
+FILE 3 · generation_mix.csv
+======================================================================
+rows 162; months 18 (2025-04 → 2026-09); categories per month [9]
+18 rows have subsource 'Total' (source 'All sources'); parts = 144 = 18 months x 8 categories
+exclusivity: parts summed vs published total: max difference 2 MWh over 18 months
+every row summed / generated = 200.0% of the energy generated (the total row counted as a part)
+
+====================================================================== 
+CHECKS AGAINST THE BRIEF
+======================================================================
+  rows in cleaned register                           24 expected           24  OK
+  population                                 57,857,000 expected   57,857,000  OK
+  households                                  8,908,512 expected    8,908,512  OK
+  interruptions                                 388,879 expected      388,879  OK
+  districts with usable outage_minutes               22 expected           22  OK
+  zone-days kept                                  3,046 expected        3,046  OK
+  slots                                           3,174 expected        3,174  OK
+  never reported                                    128 expected          128  OK
+  peak_load unusable                                 46 expected           46  OK
+  meter goes down                                     1 expected            1  OK
+  generation part rows                              144 expected          144  OK
+  electrification missing                             3 expected            3  OK
+  persons/household 5.70–7.36 (expected 5.70–7.36); mean interruption 77–214 (expected 77–214)
+  P1 June 2026 energy: 1,200,239 (brief 1,200,239) | end-of-day convention 1,199,207; sum() 574,845,315 = 479x too big (brief 479x)

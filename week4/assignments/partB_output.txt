@@ -1,0 +1,45 @@
+Series: 529 days, 13 never recorded. audit_index: {'monotonic': True, 'n_duplicated': 0, 'n_missing': 13, 'span': ('2024-04-01 00:00:00', '2025-09-11 00:00:00'), 'partial_tail': True, 'tail_period': '2025-09', 'tail_count': 11}
+
+== Q1  window_report (centred) on the daily series, gaps left as NaN ==
+ window    raw_sd  smoothed_sd  variation_removed_pct  periods_lost_each_end                                                       cycle_removed
+      7 6783.3543    4635.4013                   31.7                      3                                             weekly cycle (period 7)
+     28 6783.3543    4427.7277                   34.7                     14             weekly cycle (exactly 4 periods) + month-to-month noise
+     91 6783.3543    4144.1582                   38.9                     45 weekly + monthly; starts to remove a quarter of the real trajectory
+Choice: 7 days. A window must be a whole multiple of the cycle you want cancelled, otherwise the cycle leaks through as a ripple. 7 cancels the weekend rhythm completely and loses only 3 days at each end; 28 also cancels it but erases the Black Friday and spring-2025 dip I want to show; 91 buries them. Chosen before plotting, for the cycle, not for smoothness.
+
+== Q2  three smoothers at 2024-11-29 (Black Friday) ==
+raw 113,710  | fortnight median around it ~24,760
+14-day centred MEAN   33,403  (spike inflates it by +35% vs the median)
+14-day centred MEDIAN 24,766
+EWMA (span 14)        37,973  (one-sided, spike enters at ~13% weight and decays)
+Dashboard (monitoring): the mean/EWMA — a spike must be visible, that is what an alert is for. Quarterly report: the median — one event should not drag the trajectory, and the spike is annotated separately.
+
+== Q3  seasonal_decompose (additive; gaps linearly interpolated for this call only — 13 days, flagged) ==
+weekly seasonal peak-to-trough: 7,633 sessions/day (peak Sunday +5,284, trough Wednesday -2,349)
+largest residual: 2024-11-29 (+74,676)
+top 3 |residual| days: [('2024-11-29', 74676), ('2024-12-02', 13133), ('2024-11-28', 12861)]
+period=365 failed: x must have 2 complete cycles requires 730 observations. x only has 529 observation(s)
+period=365 is refused by statsmodels: it needs two full cycles (730 days) and the file has 529. What it WOULD do, given enough data: the annual swing moves out of trend/resid and into 'seasonal'. With 1.4 years that swing cannot be separated from the trend at all, which is itself the finding.
+
+== Q4  lag_at_turn, 31-day window ==
+trailing minimum 2024-05-22, centred minimum 2024-05-07, lag 15 days vs half-window 15
+A live dashboard refreshing each morning can only show the TRAILING mean (the future does not exist yet); its caption must say '31-day trailing mean — turning points appear ~15 days late'.
+
+== Q5  12 start months x 5 windows, straight line fitted to the rolling mean of the last window days ==
+60 combinations: RISING 38, FALLING 22
+window     7     14    28    56    91
+start                                
+2024-04    up    up    up    up    up
+2024-05    up    up    up    up    up
+2024-06    up    up    up    up    up
+2024-07    up    up    up    up    up
+2024-08    up    up    up    up    up
+2024-09    up  down  down  down  down
+2024-10  down  down  down  down  down
+2024-11  down  down  down  down  down
+2024-12  down  down  down  down  down
+2025-01    up    up    up  down  down
+2025-02    up    up    up    up  down
+2025-03    up    up    up    up    up
+By start month alone (window changes little): {'up': 6, 'mixed': 3, 'down': 3}
+Lie Factor = (effect shown)/(effect in the data) presumes there IS one agreed 'effect in the data' — a single true change between two defined points. A cherry-picked window has no such denominator: the same series carries 38 rising and 22 falling answers, so the ratio is undefined (its denominator can be made any number). Honest substitute: report the whole-series slope plus the distribution of slopes across all reasonable windows/starts (a sensitivity range), and state the window and start date were fixed before plotting.

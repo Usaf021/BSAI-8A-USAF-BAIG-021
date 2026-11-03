@@ -1,0 +1,101 @@
+
+========================================================================
+CASE 1 · month sorted as text
+========================================================================
+recipe order (text sort): ['2024-1', '2024-10', '2024-11', '2024-12', '2024-2', '2024-3', '2024-4', '2024-5', '2024-6', '2024-7', '2024-8', '2024-9', '2025-1', '2025-10'] ...
+self-check drops: [-958, -978] | rises before 1st drop: 4 points
+is the true series monotone? True | Jan24->Dec25: 4200 -> 6405 (+52.5%)
+worst month-on-month change in true series: 59 (min) 124 (max)
+rows whose string position != chronological position: 22
+
+========================================================================
+CASE 2 · plotted by row number across a closure
+========================================================================
+rows=69 first=207 last=253 rise=+22.2%
+calendar span = 90 days vs 69 rows -> 21 unrecorded days
+gap: 2025-02-02 -> 2025-02-24 (21 days with no trading)
+before: n=33 first=207 last=198 slope=-0.160 k/day
+after: n=36 first=262 last=253 slope=+0.226 k/day
+step across the closure: 198 -> 262 = +64k in one reopening
+whole-series trend line: row-indexed slope +1.232/row, calendar slope +0.901/day — both are fitted ACROSS the step
+
+========================================================================
+CASE 3 · a level resampled with sum()
+========================================================================
+audit: {'monotonic': True, 'n_duplicated': 0, 'n_missing': 227, 'span': ('2025-06-01 00:00:00', '2025-07-31 23:00:00')}
+hours observed: June 493 of 720 | July 744 of 744
+daily sum               June    8782.4  July   12543.1  change +42.8%
+daily mean              June     535.9  July     522.6  change -2.5%
+daily max (daily peak)  June     779.3  July     808.2  change +3.7%
+mean hours reported per day: June 16.4  July 24.0
+flow check (bytes, sum is legal) daily-sum: June 1.745e+07 July 2.490e+07 change +42.7%  | bytes per OBSERVED hour change -2.3%
+
+========================================================================
+CASE 4 · trailing mean reads the turn half a window late
+========================================================================
+trailing-31 minimum: 2025-09-07 | centred-31 minimum: 2025-08-23 | lag 15 d vs half-window 15
+hinge (broken-stick) fit on RAW data puts the break at 2025-08-28 -> the checkout fix is 'live' ~10 days before the trailing line says
+7-day centred minimum: 2025-08-26
+
+========================================================================
+CASE 5 · window starts at the seasonal peak
+========================================================================
+n=7 first=158.8 last=92.2 change=-41.9%
+  May->Nov 2023: 131.1 -> 75.5 = -42.4%
+  May->Nov 2024: 147.5 -> 84.4 = -42.8%
+  May->Nov 2025: 158.8 -> 92.2 = -41.9%
+year-on-year growth, every month of 2024-25: min +4.9%  max +13.3%  mean +9.2%  (months negative: 0 of 24)
+2025 annual revenue vs 2023: 1496 vs 1255 (+19.3%)
+
+========================================================================
+CASE 6 · partial final month
+========================================================================
+              sum  count   mean
+date                           
+2025-01-01   9484     31  305.9
+2025-02-01   8659     28  309.2
+2025-03-01   9818     31  316.7
+2025-04-01   9884     30  329.5
+2025-05-01  10349     31  333.8
+2025-06-01  10198     30  339.9
+2025-07-01  10884     31  351.1
+2025-08-01  11042     31  356.2
+2025-09-01  10805     30  360.2
+2025-10-01   4041     11  367.4
+Oct total 4,041 vs Sep 10,805 = 37%; last day recorded 2025-10-11 (11 of 31 days)
+daily mean: Sep 360.2 -> Oct 367.4 (+2.0%)
+
+========================================================================
+CASE 7 · stacked area: volatility leaks upward
+========================================================================
+total envelope 548 – 709
+level SD (PKR m):   {'product_a': 16.0, 'product_b': 35.6, 'product_c': 7.3, 'product_d': 3.6}
+month-on-month SD:  {'product_a': 4.7, 'product_b': 45.8, 'product_c': 6.4, 'product_d': 2.0}
+top edge of D (= total) month-on-month SD: 47.3  vs D's own thickness SD 2.0
+product_b share of the volatility under D's baseline: B SD 35.6 of cumulative-below SD 39.3
+
+========================================================================
+CASE 8 · non-exclusive parts drawn as a pie
+========================================================================
+shares %: {'touch_search': 42.62, 'touch_social': 32.3, 'touch_email': 27.48, 'touch_direct': 28.58}
+sum = 130.98%  exclusive = False  customers touched by 2+ channels: 1105 of 4000 (27.62%)  untouched: 0
+channels per customer: {1: 2895, 2: 980, 3: 116, 4: 9}
+touched ONLY by that channel (n, % of customers): {'touch_search': (1037, 25.9), 'touch_social': (714, 17.8), 'touch_email': (554, 13.9), 'touch_direct': (590, 14.8)} sum 72.4
+mean revenue (PKR) by # channels: {1: 3828.0, 2: 3810.0, 3: 3798.0, 4: 4750.0}
+
+========================================================================
+CASE 9 · a rising share of a falling total
+========================================================================
+quarter  total_revenue_pkr_m  premium_revenue_pkr_m  share
+ 2024Q1               1000.0                  240.0   24.0
+ 2024Q2                940.0                  236.9   25.2
+ 2024Q3                870.0                  233.2   26.8
+ 2024Q4                800.0                  228.0   28.5
+ 2025Q1                745.0                  227.2   30.5
+ 2025Q2                700.0                  227.5   32.5
+ 2025Q3                650.0                  228.8   35.2
+ 2025Q4                600.0                  228.0   38.0
+share 24.0% -> 38.0% | premium revenue 240 -> 228 (-5.0%) | total 1000 -> 600 (-40.0%)
+non-premium revenue 760 -> 372 (-51.1%)
+
+All nine rebuilt and redesigned.

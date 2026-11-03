@@ -1,0 +1,82 @@
+
+========================================================================
+CASE 1 · size encoded as pop_m**2 on a scatter whose size is already area
+========================================================================
+60 marks. recipe as written s=pop_m**2: largest/smallest AREA = 346,921x | area proportional to pop (s=pop_m): 589x  (self-check number 589)
+NOTE: the brief's self-check (589x) matches s proportional to pop_m; the literal recipe s=pop_m**2 gives 346,921x. I report both.
+Lie factor on area under the recipe = 589 (shown 346,921x for a 589x population range)
+countries with pop < 2.0 M: 9 | with s<1 pt^2 under the recipe: 3 | diameter ratio at correct area scaling: 24.3x
+r(pop, access) = +0.211; Spearman +0.222 (p=0.088); r(access, log gdp) = +0.834
+five largest countries' access: {'Wessant': 52.8, 'Vornath': 79.3, 'Tarrowin': 32.8, 'Galvia': 47.0, 'Fennmark': 66.2}
+
+========================================================================
+CASE 2 · choropleth of a raw count
+========================================================================
+join check districts.geojson vs district_health: 24 matched, 0 unmatched
+24 districts, 30,564 cases, population 57,857,000; top3 by count: ['D17', 'D13', 'D09']; by rate: ['D19', 'D20', 'D21']
+r(cases, population) = +0.986; pooled rate 52.8 per 100,000
+top-3-by-count districts sit at lon/lat: [('D17', 72.6, 31.8), ('D13', 66.4, 32.0), ('D09', 69.4, 29.0)] -> 6+ degrees apart: they are not a cluster 'around the capital'
+their rates: {'D17': 51.0, 'D13': 64.0, 'D09': 49.9} vs pooled 52.8
+
+========================================================================
+CASE 3 · min-max scaling with one outlier
+========================================================================
+gdp_pc: 58 of 60 below 0.10; median 0.017
+max 120,219 is 9.2x the second (13,009); min 283; without Aldonia: range 283–13,009 = 46x, IQR 1,516–4,869
+rank scaling: gdp_pc median 0.51; fraction below 0.10 = 8%
+log10 then min-max: below 0.10 = 3, median 0.35
+
+========================================================================
+CASE 4 · axis order
+========================================================================
+file order axes: ['gdp_pc', 'healthcare_access', 'urban_pct', 'median_age', 'cases_per_100k']
+healthcare_access <-> cases_per_100k are 3 axes apart (urban_pct, median_age between)
+r(healthcare_access, cases_per_100k) = -0.799 (strongest pair of 10)
+corr_chain order: ['healthcare_access', 'cases_per_100k', 'urban_pct', 'median_age', 'gdp_pc']
+adjacent |r| in file order: [0.36, 0.75, 0.64, 0.59]  mean 0.59
+adjacent |r| in chain order: [0.8, 0.62, 0.64, 0.28]  mean 0.59
+
+========================================================================
+CASE 5 · quantile classes on a flat surface
+========================================================================
+join check case05: 24 matched, 0 unmatched
+rate 31.07–33.40; spread 2.33 = 7.2% of mean; pooled 32.25; CV 2.2%
+quantile edges: [31.07 31.49 32.07 32.51 32.94 33.4 ] class counts [5 5 4 5 5]
+gap between class edges: [0.41 0.58 0.44 0.43 0.46]; GVF quantile 0.96
+districts outside the 95% Poisson funnel: 0 of 24 (about 1 expected by chance)
+
+========================================================================
+CASE 6 · small-area rates
+========================================================================
+40 units; pooled 8.72; worst U32 40.9 = 4.7x from 9 cases in 22,000
+10 units >100,000: rates 5.5–12.0
+units outside the 95% funnel: 1 of 40 (['U32']); with 40 units about 2 are expected outside by chance alone
+at 99.8% limits (z=3.09, the usual choice for ~40 units): 1 units above; U32 upper limit 28.2 vs its rate 40.9
+U32: one more/less case moves its rate by 4.5 per 100,000 (±11% of its own value)
+true underlying rate is the same in every unit (per the data dictionary) -> every difference is Poisson noise
+top-5 rates vs population: [['U32', 40.9, 22000], ['U31', 15.4, 26000], ['U09', 12.3, 57000], ['U26', 12.2, 82000], ['U02', 12.0, 125500]]
+
+========================================================================
+CASE 7 · modifiable areal unit problem
+========================================================================
+r(income, rate) across 24 districts = -0.308; across the same land cut into 6 zones = -0.746 (income population-weighted)
+zone table: {'P1': {'cases': 3208, 'pop': 6252000, 'rate': 51.3, 'income': 6813.3}, 'P2': {'cases': 4934, 'pop': 10351000, 'rate': 47.7, 'income': 8044.6}, 'P3': {'cases': 2837, 'pop': 6964000, 'rate': 40.7, 'income': 6272.7}, 'P4': {'cases': 6715, 'pop': 9941000, 'rate': 67.5, 'income': 3849.7}, 'P5': {'cases': 2388, 'pop': 3783000, 'rate': 63.1, 'income': 5686.2}, 'P6': {'cases': 10482, 'pop': 20566000, 'rate': 51.0, 'income': 6923.5}}
+2,000 random (non-contiguous) 6-zone regroupings of the same 24 districts: r from -0.99 to +0.93 (median -0.40)
+districts_alt.geojson has no attribute table, so the second 24-unit partition cannot be scored without areal interpolation (an assumption I do not make).
+
+========================================================================
+CASE 8 · ink follows area, not people
+========================================================================
+top-5 populous ['D17', 'D09', 'D24', 'D13', 'D11']: 12.6% of land, 59.9% of people
+breaks [30.4 33.8 47.5 54.4 64.8 76.5]; top two classes: 9 districts = 31.2% of land but 26.5% of people and 33.0% of cases
+r(rate, density) = +0.001; r(rate, log density) = +0.137
+pooled rate: denser half 53.0 vs sparser half 52.0 per 100,000
+
+========================================================================
+CASE 9 · radar chart: enclosed area depends on axis order
+========================================================================
+means 62.3 vs 62.0 (diff 0.33); file-order areas 9,933 vs 9,433
+all 60 distinct axis orders: A larger in 39, B larger in 21; A area 9,366–10,443, B 8,564–10,555
+per-indicator gaps: {'access': np.float64(3.4), 'staffing': np.float64(-0.6), 'funding': np.float64(35.5), 'coverage': np.float64(-42.7), 'equipment': np.float64(15.3), 'training': np.float64(-8.9)}
+
+All nine done.
