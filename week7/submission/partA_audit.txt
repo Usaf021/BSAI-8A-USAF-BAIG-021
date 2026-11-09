@@ -1,0 +1,100 @@
+PART A AUDIT — raw files, then what the script did about it
+========================================================================
+
+--- district_transit.csv (raw): 25 rows x 13 cols
+dtypes: code:object, district:object, population:int64, households:int64, area_km2:float64, lon:float64, lat:float64, income_pc_usd:int64, stops:int64, road_km:float64, boardings_annual:int64, fare_concession_pct:float64, vehicles_registered:int64
+nulls : none
+full-row duplicates: 0
+key 'code': unique=True, distinct=25
+codes not matching the pattern D##: ['d13', 'D 20']
+GeoJSON features matched on code AS FILED: 22 of 24
+register codes with no polygon: ['D 20', 'D00', 'd13']
+population sum, all 25 rows: 60,747,000
+boardings per resident < 1: [['D05', 14551, 712000], ['D15', 14668, 783000], ['D23', 20302, 1703000]]
+fare_concession_pct range: 0.326 - 38.5 | rows < 1: ['D02', 'D10', 'D18', 'D22']
+road_km <= 0: ['D06', 'D16']
+
+>>> after cleaning
+rows in/out: 25 -> 24; GeoJSON matched: 24 of 24
+population 57,857,000; households 8,908,512
+boardings_annual (register, 24 districts): 873,564,130
+boardings per 1,000 residents: 4,683 – 30,655; pooled 15,099
+fare_concession_pct: 20.9 – 42.6
+road_km usable: 22 of 24
+divisors: population 468000 - 10966000 (all > 0)
+
+--- routes.csv (raw): 36 rows x 12 cols
+dtypes: route_id:object, mode:object, corridor:object, length_km:float64, stops:int64, fleet:int64, districts_served:object, boardings_annual:int64, punctuality_pct:float64, crowding_index:float64, cost_recovery_pct:float64, subsidy_pkr_per_trip:float64
+nulls : none
+full-row duplicates: 0
+key 'route_id': unique=True, distinct=36
+mode labels as filed: {'Bus': 22, 'Metro': 4, 'Ferry': 4, 'BRT': 3, 'brt': 2, 'Bus Rapid Transit': 1}
+punctuality_pct: min 62.9, max 999.0, values >100 or ==0: ['R003', 'R025', 'R033']
+cost_recovery_pct: min 0.0, max 66.3, values >100 or ==0: ['R022', 'R033']
+crowding_index: min 0.4, max 1.32, values >100 or ==0: []
+districts_served codes with no register row: []
+
+>>> after cleaning
+routes per mode: {'Bus': 22, 'BRT': 6, 'Metro': 4, 'Ferry': 4} | distinct labels: 4
+punctuality usable: 33 of 36, 62.9–98.8
+cost_recovery codes removed: 2
+
+RECONCILIATION register vs routes: 873,564,130 vs 873,564,820 (diff 690)
+route boardings credited to every district a route serves: 2,704,739,571 = 3.096x the network total; 28 of 36 routes serve >1 district (mean 2.56, max 4)
+
+--- ridership_daily.csv (raw): 2159 rows x 7 cols
+dtypes: date:object, mode:object, trips_scheduled:int64, trips_operated:int64, trips_on_time:int64, boardings:int64, delay_minutes:int64
+nulls : none
+full-row duplicates: 23
+dates in the main (ISO) format: 1774; other: 385 (all dd/mm/yyyy: True)
+month-first parse of those: 230 fail, 155 silently accepted as a different day
+exact re-submissions: 30; by mode {'Bus': 30}, months ['2026-05']
+impossible rows: 7 (all trips_on_time > trips_operated: True)
+rows: 2159 -> 2129
+span 2025-04-01 -> 2026-09-30 = 548 days x 4 = 2192 slots; filed 2129; never filed 63
+never filed, by mode: {'Ferry': 22, 'Bus': 19, 'Metro': 18, 'BRT': 4}
+longest gap: 14 consecutive days, Metro, 2026-02-09 -> 2026-02-22
+slots filed from 2026-09-22 on: 18 of 36; by mode {'BRT': 9, 'Metro': 9}
+
+Boardings 12 months to 2026-08-31: clean 845,531,940; with the re-submitted rows left in 864,127,819 (+2.20%)
+RECONCILIATION register vs returns: 873,564,130 vs 845,531,940: returns cover 96.8%; the missing 3.2% is the days nobody filed
+
+--- fare_revenue.csv (raw): 288 rows x 5 cols
+dtypes: month:object, mode:object, ticket_type:object, trips:int64, revenue_pkr:int64
+nulls : none
+full-row duplicates: 0
+ticket_type values: {'All tickets': 72, 'Daily': 72, 'Monthly': 72, 'Single': 72}
+drilldown_check: 216 part rows + 72 total rows; summing every row = 200.0% of journeys, 200.0% of revenue; parts reconcile to published summary: True (worst diff 0)
+journeys 934,051,014; revenue 36,669,953,119 PKR; mean fare 39.3 PKR
+boardings / journeys over the file: 1.305 (the two units never share an axis)
+last month 2026-09 is partial (daily returns end the 21st for Bus/Ferry): excluded from comparisons
+
+========================================================================
+
+PART D — CHANNEL PLAN (dashlib.channel_conflicts)
+  conflicts : none | ok = True
+  redundant (deliberate, Week 2): {'mode': ['x', 'y', 'hue', 'shape']}
+  positional (reported, not flagged): {'x': ['quarter', 'share of departures %', 'mode'], 'y': ['on-time %', 'mode', 'journeys change %']}
+  one meaning per channel: hue = mode (every panel); lightness = boardings per 1,000 (map only);
+  ink / grey carry no variable (network line, tiles, grid).
+
+PART D — PALETTE ACTUALLY USED (vizlib.cvd_report), hues = Metro, BRT, Bus, Ferry
+deutan simulation
+  #0072B2  ->  #3B67B1
+  #D55E00  ->  #9E8C00
+  #009E73  ->  #8A8676
+  #CC79A7  ->  #9498A5
+protan simulation
+  #0072B2  ->  #5375B5
+  #D55E00  ->  #817100
+  #009E73  ->  #9A9271
+  #CC79A7  ->  #808BA9
+tritan simulation
+  #0072B2  ->  #008289
+  #D55E00  ->  #EB4050
+  #009E73  ->  #009E92
+  #CC79A7  ->  #D6788A
+
+  worst pair (OKLab delta-E), sim deutan:
+   (3, 4, '#009E73', '#CC79A7', 7.546637952916606)
+  identity is never colour alone: every mode also has its own marker shape ({'Metro': 'o', 'BRT': 's', 'Bus': '^', 'Ferry': 'D'}) and a direct label.
